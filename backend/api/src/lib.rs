@@ -1,6 +1,7 @@
 use std::env;
 
 use axum::{routing::get, Router};
+use migration::{Migrator, MigratorTrait};
 use service::sea_orm::Database;
 
 #[tokio::main]
@@ -8,9 +9,11 @@ async fn start() -> anyhow::Result<()> {
     env::set_var("RUST_LOG", "debug");
     dotenvy::dotenv().ok();
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
-    let conn = Database::connect(db_url)
+    let connection = Database::connect(db_url)
         .await
-        .expect("Database connection failed");
+        .expect("Database connection failed -->");
+
+    Migrator::up(&connection, None).await?;
 
     // ----> Axum
     // build our application with a single route

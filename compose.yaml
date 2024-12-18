@@ -5,39 +5,35 @@ services:
   # Frontend/ Client
   frontend:
     build:
-      context: frontend
-      target: final
+      context: ./frontend
     ports:
-      - 3000:3000
+      - "3000:3000"
     depends_on:
       - api
 
   # API/Server
   api:
     build:
-      context: backend
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
   # Database: postgres
   db:
     image: postgres
     restart: always
     user: postgres
-    secrets:
-      - db-password
     volumes:
       - voreanation-db:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=voreanation
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    env_file:
+      - ./backend/.env
     expose:
       - 5432
-    healthcheck:
-      test: ["CMD", "pg_isready"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    ports:
+      - "5432:5432"
 volumes:
   voreanation-db:
