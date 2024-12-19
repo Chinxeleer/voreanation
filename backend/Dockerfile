@@ -26,7 +26,6 @@ RUN cargo build --release --bin backend
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 
-
 # Install necessary libraries
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \

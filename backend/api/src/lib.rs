@@ -20,7 +20,8 @@ async fn start() -> anyhow::Result<()> {
     let app = Router::new().route("/", get(|| async { "Hello, World!" }));
 
     // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
+    println!("--> running axum");
     axum::serve(listener, app).await.unwrap();
 
     Ok(())

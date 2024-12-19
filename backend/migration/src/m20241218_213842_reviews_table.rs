@@ -11,33 +11,34 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(Claims::Table)
+                    .table(Reviews::Table)
                     .if_not_exists()
+                    .col(ColumnDef::new(Reviews::Id).uuid().not_null().primary_key())
+                    .col(string(Reviews::DonationId).uuid().not_null())
+                    .col(string(Reviews::ReviewerId).uuid().not_null())
                     .col(
-                        ColumnDef::new(Claims::Id)
-                            .uuid()
+                        ColumnDef::new(Reviews::Rating)
+                            .integer()
                             .not_null()
-                            .primary_key(),
+                            .check(Expr::col(Reviews::Rating).between(1, 5)),
                     )
-                    .col(string(Claims::DonationId).uuid().not_null())
-                    .col(string(Claims::RecipientId).uuid().not_null())
-                    .col(string(Claims::Status).not_null())
+                    .col(ColumnDef::new(Reviews::Comment).text())
                     .col(
-                        ColumnDef::new(Claims::ClaimedAt)
+                        ColumnDef::new(Reviews::CreatedAt)
                             .date_time()
                             .not_null()
                             .default(Expr::current_timestamp()),
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk-claims-donation-id")
-                            .from(Claims::Table, Claims::DonationId)
+                            .name("fk-reviews-donation-id")
+                            .from(Reviews::Table, Reviews::DonationId)
                             .to(Donations::Table, Donations::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk-claims-recipient-id")
-                            .from(Claims::Table, Claims::RecipientId)
+                            .name("fk-reviews-reviewer-id")
+                            .from(Reviews::Table, Reviews::ReviewerId)
                             .to(Users::Table, Users::Id),
                     )
                     .to_owned(),
@@ -47,17 +48,18 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(Claims::Table).to_owned())
+            .drop_table(Table::drop().table(Reviews::Table).to_owned())
             .await
     }
 }
 
 #[derive(DeriveIden)]
-enum Claims {
+enum Reviews {
     Table,
     Id,
     DonationId,
-    RecipientId,
-    Status,
-    ClaimedAt,
+    ReviewerId,
+    Rating,
+    Comment,
+    CreatedAt,
 }

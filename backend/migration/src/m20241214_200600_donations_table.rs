@@ -13,7 +13,12 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Donations::Table)
                     .if_not_exists()
-                    .col(pk_auto(Donations::Id).uuid())
+                    .col(
+                        ColumnDef::new(Donations::Id)
+                            .uuid()
+                            .not_null()
+                            .primary_key()
+                    )
                     .col(string(Donations::DonorId).uuid().not_null())
                     .col(string(Donations::Title).not_null())
                     .col(string(Donations::Description).text())
@@ -34,7 +39,12 @@ impl MigrationTrait for Migration {
                     )
                     .col(string(Donations::PickupAddress).not_null())
                     .col(string(Donations::PickupCity).not_null())
-                    .col(string(Donations::PickUpTime).not_null())
+                    .col(
+                        string(Donations::PickUpTime)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-donations-donor-id")
@@ -54,7 +64,7 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-enum Donations {
+pub enum Donations {
     Table,
     Id,
     DonorId,
